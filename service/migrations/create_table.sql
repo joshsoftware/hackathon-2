@@ -39,5 +39,5 @@ CREATE TABLE analysis (
             created_at TIMESTAMP NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
             FOREIGN KEY (event_id) REFERENCES events (id),
-            FOREIGN KEY (error_log_id) REFERENCES error_logs (id)
+            FOREIGN KEY (logs) REFERENCES error_logs (id)
 );
