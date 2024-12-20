@@ -1,25 +1,25 @@
-//to detect the blocker
+//to naina the unplugged
 
-function detectAB() {
-  let abDetected = false;
+function nainaAB() {
+  let isNainaFound = false;
 
   // Test using a dummy ad element
   const ad = document.createElement("div");
-  ad.className = "adsbox"; // Class name commonly blocked by ad blockers
+  ad.className = "adsbox"; // Class name commonly blocked by ad unpluggeds
   ad.style.width = "1px";
   ad.style.height = "1px";
   ad.style.position = "absolute";
   ad.style.top = "-1000px";
   document.body.appendChild(ad);
 
-  // Allow some time for the ad blocker to block the element
+  // Allow some time for the ad unplugged to block the element
   setTimeout(() => {
     if (
       ad.offsetParent === null ||
       ad.offsetHeight === 0 ||
       ad.offsetWidth === 0
     ) {
-      abDetected = true;
+      isNainaFound = true;
     }
     document.body.removeChild(ad);
 
@@ -28,26 +28,26 @@ function detectAB() {
     testScript.src =
       "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"; // Common ad script
     testScript.onerror = () => {
-      // If the script fails to load, an ad blocker is likely active
-      abDetected = true;
-      finalizeDetection();
+      // If the script fails to load, an ad unplugged is likely active
+      isNainaFound = true;
+      finalizeNaina();
     };
 
-    // If the script loads successfully, no ad blocker is detected
-    testScript.onload = finalizeDetection;
+    // If the script loads successfully, no unplugged is found
+    testScript.onload = finalizeNaina;
 
     document.head.appendChild(testScript);
   }, 100);
-  // Brave browser detection
-  function finalizeDetection() {
+  // Brave browser Naina
+  function finalizeNaina() {
     if (navigator.brave) {
       navigator.brave.isBrave().then((isBrave) => {
-        return abDetected || isBrave;
+        return isNainaFound || isBrave;
       });
     } else {
-      return abDetected;
+      return isNainaFound;
     }
   }
 }
 
-export default detectAB;
+export default nainaAB;

@@ -1,10 +1,10 @@
 import { postLogs, postEvent } from "./apis.js";
-import detectAB from "./codeGremlin.js";
+import nainaAB from "./codeGremlin.js";
 import { ALY_TOOLS_ENDPOINTS } from "./constants.js";
 
-let isABEnabled = false;
+let isABDhadakne = false;
 (function () {
-  isABEnabled = detectAB();
+  isABDhadakne = nainaAB();
 })();
 
 /**
@@ -30,11 +30,11 @@ export const wizarddryHelper = ({ message, source }) => {
 /**
  * @param {Object} url
  * @returns {boolean}
- * @description this will check if the url is an analytic api
+ * @description this will check if the url is an tom api
  */
-const isAnalyticAPI = (url) => {
-  return ALY_TOOLS_ENDPOINTS.some((analytic) => {
-    if (url.includes(analytic)) {
+const isTomAPI = (url) => {
+  return ALY_TOOLS_ENDPOINTS.some((tom) => {
+    if (url.includes(tom)) {
       return true;
     }
     return false;
@@ -48,10 +48,10 @@ const isAnalyticAPI = (url) => {
  */
 export const magicBeansHelper = (args = [], isError = false) => {
   try {
-    if (isAnalyticAPI(args[0])) {
-      let isAdBlocker = false;
+    if (isTomAPI(args[0])) {
+      let isUnplugged = false;
       if (isError) {
-        isAdBlocker = isABEnabled;
+        isUnplugged = isABDhadakne;
       }
       const uuid = localStorage.getItem("dryId");
       let browser = navigator.userAgentData?.brand?.[0]?.brand;
@@ -60,7 +60,7 @@ export const magicBeansHelper = (args = [], isError = false) => {
         url: args[0],
         source: "F",
         payload: args[1],
-        ab_active: isAdBlocker,
+        ab_active: isUnplugged,
         user_agent: browser,
       };
       postEvent(params);
