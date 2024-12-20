@@ -101,35 +101,50 @@ def fetch_and_process_events() -> Dict[str, List[Dict]]:
 
 def insert_analysis_results(analysis_results: List[Dict], connection):
     """
-    Inserts analysis results into the analysis table.
+    Inserts analysis results into the analysis and analysis_error_logs tables.
 
     Args:
         analysis_results (List[Dict]): List of analysis results to insert.
         connection: Active database connection.
     """
     try:
-        insert_query = """
-            INSERT INTO analysis (
-                event_id, insights, logs, fixable, remarks
-            ) VALUES (
-                %s, %s, %s, %s, %s
-            )
-        """
-        values = [
-            (
-                analysis.get("event_id"),
-                ", ".join(analysis.get("insights", [])),
-                ", ".join(analysis.get("logs", [])),
-                analysis.get("fixable", False),
-                analysis.get("remarks", ""),
-            )
-            for analysis in analysis_results["result"]
-        ]
-
         with connection.cursor() as cursor:
-            execute_batch(cursor, insert_query, values)
-        connection.commit()
-        print(f"{len(analysis_results)} analysis results inserted successfully.")
+            # Insert into the analysis table
+            insert_analysis_query = """
+                INSERT INTO analysis (
+                    event_id, insights, fixable, remarks, created_at, updated_at
+                ) VALUES (
+                    %s, %s, %s, %s, NOW(), NOW()
+                ) RETURNING id
+            """
+
+            # Insert into the analysis_error_logs table
+            insert_logs_query = """
+                INSERT INTO analysis_error_logs (
+                    analysis_id, log_id
+                ) VALUES (%s, %s)
+            """
+
+            for analysis in analysis_results:
+                # Insert into the analysis table and get the generated ID
+                cursor.execute(
+                    insert_analysis_query,
+                    (
+                        analysis.get("event_id"),
+                        ", ".join(analysis.get("insights", [])),
+                        analysis.get("fixable", False),
+                        analysis.get("remarks", ""),
+                    ),
+                )
+                analysis_id = cursor.fetchone()[0]
+
+                # Insert associated logs into the analysis_error_logs table
+                log_ids = analysis.get("logs", [])
+                log_values = [(analysis_id, log_id) for log_id in log_ids]
+                execute_batch(cursor, insert_logs_query, log_values)
+
+            connection.commit()
+            print(f"{len(analysis_results)} analysis results inserted successfully.")
 
     except Exception as e:
         print(f"Error inserting analysis results: {e}")

@@ -32,12 +32,18 @@ CREATE TABLE error_logs (
 CREATE TABLE analysis (
             id SERIAL PRIMARY KEY,
             event_id INT NOT NULL,
-            logs TEXT,
             insights TEXT,
             fixable BOOLEAN DEFAULT FALSE,
             remarks TEXT,
             created_at TIMESTAMP NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-            FOREIGN KEY (event_id) REFERENCES events (id),
-            FOREIGN KEY (logs) REFERENCES error_logs (id)
+            FOREIGN KEY (event_id) REFERENCES events (id)
+);
+
+CREATE TABLE analysis_error_logs (
+    analysis_id INT NOT NULL,
+    log_id INT NOT NULL,
+    PRIMARY KEY (analysis_id, log_id),
+    FOREIGN KEY (analysis_id) REFERENCES analysis (id),
+    FOREIGN KEY (log_id) REFERENCES error_logs (id)
 );
