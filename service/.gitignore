@@ -1,0 +1,15 @@
+# Python bytecode files
+__pycache__/
+*.py[cod]
+
+# Virtual environment folder
+env/
+.venv/
+
+
+# Environment variables file (keep this private)
+.env
+
+# IDE and tools specific
+.history
+.vscode
