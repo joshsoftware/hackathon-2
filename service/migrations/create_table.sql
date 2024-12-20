@@ -9,12 +9,12 @@ CREATE TABLE events (
             url VARCHAR(255) NOT NULL,
             payload TEXT,
             status status_enum NOT NULL DEFAULT 'PENDING',
-            created_at TIMESTAMP NOT NULL,
-            updated_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
             result result_enum NOT NULL,
             user_agent VARCHAR(255),
             ad_blocker_active BOOLEAN NOT NULL,
-            plugin_installed VARCHAR(255)
+            plugin_installed TEXT
 );
 
 CREATE TABLE error_logs (
@@ -23,20 +23,21 @@ CREATE TABLE error_logs (
             log TEXT,
             title VARCHAR(255),
             status status_enum NOT NULL DEFAULT 'PENDING',
-            created_at TIMESTAMP NOT NULL,
-            updated_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
             source source_enum NOT NULL,
-            origin VARCHAR(255)
+            origin VARCHAR(255) 
 );
 
 CREATE TABLE analysis (
             id SERIAL PRIMARY KEY,
-            uuid VARCHAR(255) NOT NULL,
             event_id INT NOT NULL,
-            insights VARCHAR(255),
+            logs TEXT,
+            insights TEXT,
             fixable BOOLEAN DEFAULT FALSE,
             remarks TEXT,
-            created_at TIMESTAMP NOT NULL,
-            updated_at TIMESTAMP NOT NULL,
-            FOREIGN KEY (event_id) REFERENCES events (id)
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            FOREIGN KEY (event_id) REFERENCES events (id),
+            FOREIGN KEY (error_log_id) REFERENCES error_logs (id)
 );

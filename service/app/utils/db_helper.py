@@ -1,6 +1,9 @@
-from app.database import get_db_connection
+from database import get_db_connection
 
 def execute_query(query, params=None):
+    """
+    Execute a query on the database.
+    """
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:

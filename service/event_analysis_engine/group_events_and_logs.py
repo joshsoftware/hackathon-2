@@ -1,6 +1,6 @@
 import psycopg2
 import os
-from typing import Dict, List, Any
+from typing import Dict, List
 from dotenv import load_dotenv
 from event_analysis_engine import analyse_events_and_logs
 
@@ -108,29 +108,32 @@ def insert_analysis_results(analysis_results: List[Dict], connection):
         connection: Active database connection.
     """
     try:
-        cursor = connection.cursor()
         insert_query = """
             INSERT INTO analysis (
-                uuid, event_id, insights, fixable, remarks, created_at, updated_at
+                event_id, insights, logs, fixable, remarks
             ) VALUES (
-                %s, %s, %s, %s, %s, NOW(), NOW()
+                %s, %s, %s, %s, %s
             )
         """
-        for result in analysis_results:
-            cursor.execute(insert_query, (
-                result.get("event_id"),
-                result.get("uuid"),
-                ", ".join(result.get("insights", [])),
-                result.get("fixable", False),
-                result.get("remark", ""),
-            ))
+        values = [
+            (
+                analysis.get("event_id"),
+                ", ".join(analysis.get("insights", [])),
+                ", ".join(analysis.get("logs", [])),
+                analysis.get("fixable", False),
+                analysis.get("remarks", ""),
+            )
+            for analysis in analysis_results["result"]
+        ]
+
+        with connection.cursor() as cursor:
+            execute_batch(cursor, insert_query, values)
         connection.commit()
-        print("Analysis results inserted successfully.")
+        print(f"{len(analysis_results)} analysis results inserted successfully.")
+
     except Exception as e:
         print(f"Error inserting analysis results: {e}")
         connection.rollback()
-    finally:
-        cursor.close()
 
 # Main execution
 if __name__ == "__main__":
@@ -148,26 +151,11 @@ if __name__ == "__main__":
         backend_logs=data["backend_logs"],
     )
 
-    analytics_to_insert = [
-        {
-            "uuid": event["uuid"],
-            "event_id": event["id"],
-            "log_id": log["id"],
-            "insights": " ",
-            "fixable": True,
-            "remarks": " "
-        }
-        for event in data["frontend_events"]   
-        for log in data["frontend_logs"]
-    ]
-
     if analysis_result and "result" in analysis_result:
-        connection = psycopg2.connect(DATABASE_URL)
         try:
-            insert_analysis_results(analysis_result["result"], connection)
-        finally:
-            connection.close()
-
+            with psycopg2.connect(DATABASE_URL) as connection:
+                insert_analysis_results(analysis_result["result"], connection)
+        except Exception as e:
+            print(f"Database connection error: {e}")
     print("Process completed.")
-
     
