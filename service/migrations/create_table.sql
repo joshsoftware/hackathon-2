@@ -1,6 +1,6 @@
 CREATE TYPE source_enum AS ENUM ('F', 'B');
-CREATE TYPE status_enum AS ENUM ('pending', 'processed');
-CREATE TYPE result_enum AS ENUM ('success', 'failed');
+CREATE TYPE status_enum AS ENUM ('PENDING', 'PROCESSED');
+CREATE TYPE result_enum AS ENUM ('SUCCESS', 'FAILED');
 
 CREATE TABLE events (
             id SERIAL PRIMARY KEY,
@@ -25,7 +25,8 @@ CREATE TABLE error_logs (
             status status_enum NOT NULL DEFAULT 'pending',
             created_at TIMESTAMP NOT NULL,
             updated_at TIMESTAMP NOT NULL,
-            source source_enum NOT NULL
+            source source_enum NOT NULL,
+            origin VARCHAR(255)
 );
 
 CREATE TABLE analysis (
