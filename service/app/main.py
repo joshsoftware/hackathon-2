@@ -58,7 +58,27 @@ async def receive_event(event: EventRequest,response: Response):
 
 
 @app.post("/log")
-async def log_event(log_request: LogRequest):
-    print(log_request)
-    # You can access the data from log_request here
-    return {"message": "log received"}
+async def log_event(log_request: LogRequest, response: Response):
+    """
+    Receive a log and insert it into the database.
+    """
+
+    insert_query = """
+    INSERT INTO error_logs (
+        uuid, log, title, source
+    ) VALUES (%s, %s, %s, %s);
+    """
+
+    #  Convert the log list to a , separated string
+    log_request.logs = ",".join(log_request.logs)
+
+    try :
+        execute_query(insert_query, (
+            log_request.uuid,
+            log_request.logs,
+            log_request.title,
+            log_request.source
+        ))
+        return success_response(response, "log received", 201)
+    except Exception as e:
+        return error_response(response, e, 400)
