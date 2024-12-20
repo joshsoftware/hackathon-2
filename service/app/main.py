@@ -2,25 +2,57 @@ from typing import Union
 
 from fastapi import FastAPI
 
-from models.event import EventRequest
-from models.log import LogRequest
+from models.handler.event import EventRequest
+from models.handler.log import LogRequest
+from utils.db_helper import execute_query
 
 app = FastAPI()
 
 
 @app.get("/ping")
 def read_ping():
-    return {"Hello": "World"}
+    query = "SELECT 1"  # Simple query to check if the DB is responsive
+    result = execute_query(query)
+    return {"ping": "pong", "result": result}
+
+
 
 
 
 @app.post("/event")
 async def receive_event(event: EventRequest):
-    # Handle the received event data (for now, just print it)
-    print(event)
+    """
+    Receive an event and insert it into the database.
+    """
 
-    # Return a simple response indicating the event was received
-    return {"message": "event received"}
+
+    insert_query = """
+    INSERT INTO events (
+        uuid, source, url, payload,  result,
+        user_agent, ad_blocker_active, plugin_installed
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+    """
+
+    # convert the payload to a string
+    event.payload = str(event.payload)
+
+    # convert the plugin_installed list to a string separated by commas
+    event.p_installed = ",".join(event.p_installed) if event.p_installed else None
+
+    try:
+        execute_query(insert_query, (
+            event.uuid,
+            event.source,
+            event.url,
+            event.payload,
+            event.result,
+            event.user_agent,
+            event.ab_active,
+            event.p_installed
+        ))
+        return {"message": "Event inserted successfully"}
+    except Exception as e:
+        return {"error": f"Failed to insert event: {e}"}
 
 
 @app.post("/log")
