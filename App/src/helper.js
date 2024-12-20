@@ -19,6 +19,7 @@ export const wizarddryHelper = ({ message, source }) => {
     let params = {
       uuid,
       logs: [message],
+      source: "F",
       origin: source,
     };
     postLogs(params);
