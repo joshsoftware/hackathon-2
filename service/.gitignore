@@ -10,9 +10,6 @@ env/
 # Environment variables file (keep this private)
 .env
 
-
-
-
-
-
-
+# IDE and tools specific
+.history
+.vscode
