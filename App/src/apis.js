@@ -1,4 +1,4 @@
-const BASE_URL = "";
+const BASE_URL = "http://localhost:8000/";
 
 export const postLogs = (params) => {
   fetch(`${BASE_URL}/log`, {
