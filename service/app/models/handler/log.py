@@ -1,8 +1,6 @@
-from typing import Optional, Dict, Any,List
+from typing import Optional, Dict, List
 from pydantic import BaseModel
 from models.source import SourceType
-
-from enum import Enum
 
 class LogRequest(BaseModel):
     uuid: str
