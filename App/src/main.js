@@ -1,4 +1,5 @@
 import "./wizarddry.js";
+import "./magicBeans.js";
 
 //generate the uuid for the user and store it in the local storage to identify the user
 document.addEventListener("DOMContentLoaded", (event) => {
