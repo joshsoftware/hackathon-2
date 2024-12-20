@@ -1,10 +1,12 @@
 from typing import Union
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 
 from models.handler.event import EventRequest
 from models.handler.log import LogRequest
 from utils.db_helper import execute_query
+
+from utils.response import success_response, error_response
 
 app = FastAPI()
 
@@ -20,7 +22,7 @@ def read_ping():
 
 
 @app.post("/event")
-async def receive_event(event: EventRequest):
+async def receive_event(event: EventRequest,response: Response):
     """
     Receive an event and insert it into the database.
     """
@@ -50,9 +52,9 @@ async def receive_event(event: EventRequest):
             event.ab_active,
             event.p_installed
         ))
-        return {"message": "Event inserted successfully"}
+        return success_response(response, "event received", 201)
     except Exception as e:
-        return {"error": f"Failed to insert event: {e}"}
+        return error_response(response, e, 400)
 
 
 @app.post("/log")
