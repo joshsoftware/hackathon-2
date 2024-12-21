@@ -12,7 +12,7 @@ from utils.response import success_response, error_response
 import uvicorn
 
 from event_listener.event_listner import APIEventMiddleware
-from utils.location import get_location_by_ip
+from utils.location import get_location
 
 app = FastAPI()
 
@@ -37,10 +37,6 @@ async def receive_event(event: EventRequest,request :Request,response: Response)
     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s);
     """
 
-    client_ip = request.client.host
-
-    
-
     # convert the payload to a string
     event.payload = str(event.payload)
 
@@ -48,7 +44,7 @@ async def receive_event(event: EventRequest,request :Request,response: Response)
     event.p_installed = ",".join(event.p_installed) if event.p_installed else None
 
     try:
-        userLoc = get_location_by_ip(client_ip)
+        userLoc = get_location(request)
         print(userLoc)
         execute_query(insert_query, (
             event.uuid,
@@ -83,10 +79,8 @@ async def log_event(log_request: LogRequest,request :Request, response: Response
     #  Convert the log list to a , separated string
     log_request.logs = ",".join(log_request.logs)
 
-    client_ip = request.client.host
-
     try :
-        userLoc = get_location_by_ip(client_ip)
+        userLoc = get_location(request)
         print(userLoc)
         execute_query(insert_query, (
             log_request.uuid,
