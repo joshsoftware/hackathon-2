@@ -19,7 +19,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8000", "http://localhost:5173"],  # Allows all origins
+    allow_origins=["http://localhost:8000", "http://localhost:5173", "http://localhost:8000/log"],  # Allows all origins
     allow_credentials=True,  # Allows cookies and credentials
     allow_methods=["*"],  # Allows all HTTP methods
     allow_headers=["*"],  # Allows all headers
@@ -146,7 +146,7 @@ async def handle_http_exceptions(request: Request, call_next):
         await event_middleware.process_exception(request, e)
         return JSONResponse(
             content={"error": "Internal Server Error"},
-            status_code=response.status_code,
+            status_code=response["status_code"],
         )        
 
 if __name__ == "__main__":

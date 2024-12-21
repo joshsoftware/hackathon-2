@@ -44,6 +44,7 @@ export const magicBeansHelper = async (args = [], isError = false) => {
         payload: args[1],
         ab_active: isUnplugged,
         user_agent: browser,
+        result: isError ? "FAILED" : "SUCCESS"
       };
       postEvent(params);
     }
