@@ -19,7 +19,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["http://localhost:8000", "http://localhost:5173"],  # Allows all origins
     allow_credentials=True,  # Allows cookies and credentials
     allow_methods=["*"],  # Allows all HTTP methods
     allow_headers=["*"],  # Allows all headers
@@ -136,6 +136,7 @@ event_middleware = APIEventMiddleware(failure_callback=log_backend_event)
 
 @app.middleware("http")
 async def handle_http_exceptions(request: Request, call_next):
+    response={"status_code": 200}
     try:
         response = await call_next(request)
         if response.status_code >= 400:
