@@ -13,12 +13,12 @@ Return your findings as a JSON object with the following structure:
 {
     "result": [
         {
-            "event_id": "", // uuid of this event
+            "event_id": "", // ID of this event
             "logs": [1, 2, 3], // IDs of the logs related to this event failure
             "reason": "", // one of these: ad-blocker-plugin,ad-blocking-browser,network-failure,browser-policy,service-unavailability
             "insights": ["insight 1", "insight 2"], // Insights about what went wrong
             "fixable": false, // True if the issue is fixable, false otherwise
-            "remark": "" // Additional detailed remarks
+            "remarks": "" // Additional detailed remarks
         }
     ]
 }

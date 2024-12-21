@@ -10,7 +10,7 @@ from utils.db_helper import execute_query
 from utils.response import success_response, error_response
 import uvicorn
 
-from EventListner.event_listner import APIEventMiddleware
+from event_listener.event_listner import APIEventMiddleware
 
 app = FastAPI()
 
