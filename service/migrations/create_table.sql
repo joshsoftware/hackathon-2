@@ -14,12 +14,11 @@ END $$;
 
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'result_enum') THEN
-        CREATE TYPE result_enum AS ENUM ('SUCCESS', 'FAILED');
-    END IF;
-END $$;
-
-CREATE TABLE events (
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'events'
+    ) THEN
+        CREATE TABLE events (
             id SERIAL PRIMARY KEY,
             uuid VARCHAR(255) NOT NULL,
             source source_enum NOT NULL,
@@ -32,9 +31,17 @@ CREATE TABLE events (
             user_agent VARCHAR(255),
             ad_blocker_active BOOLEAN NOT NULL,
             plugin_installed TEXT
-);
+        );
+    END IF;
+END $$;
 
-CREATE TABLE error_logs (
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'error_logs'
+    ) THEN
+        CREATE TABLE error_logs (
             id SERIAL PRIMARY KEY,
             uuid VARCHAR(255) NOT NULL,
             log TEXT,
@@ -43,10 +50,18 @@ CREATE TABLE error_logs (
             created_at TIMESTAMP NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
             source source_enum NOT NULL,
-            origin VARCHAR(255) 
-);
-
-CREATE TABLE analysis (
+            origin VARCHAR(255)
+        );
+    END IF;
+END $$;
+ 
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'analysis'
+    ) THEN
+        CREATE TABLE analysis (
             id SERIAL PRIMARY KEY,
             event_id INT NOT NULL,
             reason VARCHAR(255),
@@ -56,14 +71,24 @@ CREATE TABLE analysis (
             created_at TIMESTAMP NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
             FOREIGN KEY (event_id) REFERENCES events (id)
-);
+        );
+    END IF;
+END $$;
 
-CREATE TABLE analysis_error_logs (
-    analysis_id INT NOT NULL,
-    log_id INT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (analysis_id, log_id),
-    FOREIGN KEY (analysis_id) REFERENCES analysis (id),
-    FOREIGN KEY (log_id) REFERENCES error_logs (id)
-);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'analysis_error_logs'
+    ) THEN
+        CREATE TABLE analysis_error_logs (
+            analysis_id INT NOT NULL,
+            log_id INT NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            PRIMARY KEY (analysis_id, log_id),
+            FOREIGN KEY (analysis_id) REFERENCES analysis (id),
+            FOREIGN KEY (log_id) REFERENCES error_logs (id)
+        );
+    END IF;
+END $$;
