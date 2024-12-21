@@ -93,7 +93,9 @@ BEGIN
     END IF;
 END $$;
 
-IF NOT EXISTS (
+DO $$
+BEGIN
+    IF NOT EXISTS (
         SELECT 1 
         FROM information_schema.columns 
         WHERE table_name = 'error_logs' AND column_name = 'country'
@@ -118,7 +120,9 @@ IF NOT EXISTS (
     END IF;
 END $$;
 
-IF NOT EXISTS (
+DO $$
+BEGIN
+    IF NOT EXISTS (
         SELECT 1 
         FROM information_schema.columns 
         WHERE table_name = 'events' AND column_name = 'country'
