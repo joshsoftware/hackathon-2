@@ -1,53 +1,42 @@
-//to naina the unplugged
+async function nainaAB() {
+  return new Promise((resolve, reject) => {
+    let isNainaFound = false;
 
-function nainaAB() {
-  let isNainaFound = false;
+    const ad = document.createElement("div");
+    ad.className = "adsbox";
+    ad.style.width = "1px";
+    ad.style.height = "1px";
+    ad.style.position = "absolute";
+    ad.style.top = "-1000px";
+    document.body.appendChild(ad);
 
-  // Test using a dummy ad element
-  const ad = document.createElement("div");
-  ad.className = "adsbox"; // Class name commonly blocked by ad unpluggeds
-  ad.style.width = "1px";
-  ad.style.height = "1px";
-  ad.style.position = "absolute";
-  ad.style.top = "-1000px";
-  document.body.appendChild(ad);
+    setTimeout(() => {
+      if (ad.offsetParent === null || ad.offsetHeight === 0 || ad.offsetWidth === 0) {
+        isNainaFound = true;
+      }
+      document.body.removeChild(ad);
 
-  // Allow some time for the ad unplugged to block the element
-  setTimeout(() => {
-    if (
-      ad.offsetParent === null ||
-      ad.offsetHeight === 0 ||
-      ad.offsetWidth === 0
-    ) {
-      isNainaFound = true;
-    }
-    document.body.removeChild(ad);
+      const testScript = document.createElement("script");
+      testScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js";
 
-    // Test using an external ad script
-    const testScript = document.createElement("script");
-    testScript.src =
-      "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"; // Common ad script
-    testScript.onerror = () => {
-      // If the script fails to load, an ad unplugged is likely active
-      isNainaFound = true;
-      finalizeNaina();
-    };
+      testScript.onerror = () => {
+        isNainaFound = true;
+        resolve(isNainaFound);
+      };
 
-    // If the script loads successfully, no unplugged is found
-    testScript.onload = finalizeNaina;
+      testScript.onload = () => {
+        if (navigator.brave) {
+          navigator.brave.isBrave().then((isB) => {
+            reject(isNainaFound || isB);
+          });
+        } else {
+          resolve(isNainaFound);
+        }
+      };
 
-    document.head.appendChild(testScript);
-  }, 100);
-  // Brave browser Naina
-  function finalizeNaina() {
-    if (navigator.brave) {
-      navigator.brave.isBrave().then((isBrave) => {
-        return isNainaFound || isBrave;
-      });
-    } else {
-      return isNainaFound;
-    }
-  }
+      document.head.appendChild(testScript);
+    }, 100);
+  });
 }
 
 export default nainaAB;

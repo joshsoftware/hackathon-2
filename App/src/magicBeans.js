@@ -1,4 +1,3 @@
-//This file is used to read events
 import { magicBeansHelper } from "./helper.js";
 
 (function () {
@@ -20,7 +19,7 @@ import { magicBeansHelper } from "./helper.js";
     this.addEventListener("error", () => magicBeansHelper([url, method], true));
     this.addEventListener("load", () => {
       if (this.status === 0) {
-        magicBeansHelper([url, method], true); // Status 0 indicates a possible blocked request
+        magicBeansHelper([url, method], true);
       } else {
         magicBeansHelper([url, method], false);
       }
