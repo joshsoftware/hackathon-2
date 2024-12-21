@@ -88,20 +88,22 @@ async def log_backend_event(event):
     """
 
     insert_query = """
-    INSERT INTO error_logs (
-        uuid, log, title, source
-    ) VALUES (%s, %s, %s, %s);
+    INSERT INTO events (
+        uuid, source, url, payload,  result,
+        user_agent, ad_blocker_active, plugin_installed
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
     """
-
-    #  Convert the log list to a , separated string
-    event["logs"] = ",".join(event["logs"])
 
     try :
         execute_query(insert_query, (
             event["uuid"],
-            event["logs"],
-            event["title"],
-            event["source"]
+            event["source"],
+            event["url"],
+            event["payload"],
+            event["result"],
+            event["user_agent"],
+            event["ab_active"],
+            event["p_installed"]
         ))
         print("\n\n Insertion Successfull\n\n")
     except Exception as e:
@@ -120,7 +122,7 @@ async def handle_http_exceptions(request: Request, call_next):
         await event_middleware.process_exception(request, e)
         return JSONResponse(
             content={"error": "Internal Server Error"},
-            status_code=500,
+            status_code=response.status_code,
         )        
 
 if __name__ == "__main__":

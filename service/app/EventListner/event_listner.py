@@ -22,12 +22,17 @@ class APIEventMiddleware:
             request: FastAPI request object.
             exception: The exception that occurred.
         """
+
         event = {
             "uuid": request.headers.get("uuid") or datetime.now().isoformat(),
-            "logs": [f"Server error: {exception} - Path: {request.url.path}"],
-            "title": "Server error",
             "source": "B",
             "status_code": 500,
+            "url": request.url.path,
+            "payload": str(exception),
+            "result": "FAILED",
+            "user_agent": request.headers.get("user-agent"),
+            "ab_active": False,
+            "p_installed": False,       
         }
         self.logger.error(f"Failed API Event: {event}")
 
