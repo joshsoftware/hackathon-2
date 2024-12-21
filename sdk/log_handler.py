@@ -13,7 +13,7 @@ class APILogHandler(logging.Handler):
     def emit(self, record):
         try:
             # Only send ERROR level logs to the API
-            if record.levelname != "ERROR":
+            if record.levelname.lower() != "error":
                 return
 
             # Format the log message
@@ -48,7 +48,7 @@ def generate_logs():
 
     # Create a logger
     logger = logging.getLogger("RealTimeLogger")
-    logger.setLevel(logging.DEBUG)  # Set to DEBUG to log all levels
+    logger.setLevel(logging.ERROR)  # Set to DEBUG to log all levels
 
     # Add the custom log handler to the logger
     api_log_handler = APILogHandler(api_url)
