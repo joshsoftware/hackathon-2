@@ -7,12 +7,15 @@ from models.handler.event import EventRequest
 from models.handler.log import LogRequest
 from utils.db_helper import execute_query
 
+
 from utils.response import success_response, error_response
 import uvicorn
 
 from event_listener.event_listner import APIEventMiddleware
+from utils.location import get_location
 
 app = FastAPI()
+
 
 @app.get("/ping")
 def read_ping():
@@ -21,7 +24,7 @@ def read_ping():
     return {"ping": "pong", "result": result}
 
 @app.post("/event")
-async def receive_event(event: EventRequest,response: Response):
+async def receive_event(event: EventRequest,request :Request,response: Response):
     """
     Receive an event and insert it into the database.
     """
@@ -30,8 +33,8 @@ async def receive_event(event: EventRequest,response: Response):
     insert_query = """
     INSERT INTO events (
         uuid, source, url, payload,  result,
-        user_agent, ad_blocker_active, plugin_installed
-    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+        user_agent, ad_blocker_active, plugin_installed, country, city, region
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s);
     """
 
     # convert the payload to a string
@@ -41,6 +44,8 @@ async def receive_event(event: EventRequest,response: Response):
     event.p_installed = ",".join(event.p_installed) if event.p_installed else None
 
     try:
+        userLoc = get_location(request)
+        print(userLoc)
         execute_query(insert_query, (
             event.uuid,
             event.source,
@@ -49,7 +54,10 @@ async def receive_event(event: EventRequest,response: Response):
             event.result,
             event.user_agent,
             event.ab_active,
-            event.p_installed
+            event.p_installed,
+            userLoc.get("country"),
+            userLoc.get("city"),
+            userLoc.get("region")
         ))
         return success_response(response, "event received", 201)
     except Exception as e:
@@ -57,26 +65,31 @@ async def receive_event(event: EventRequest,response: Response):
 
 
 @app.post("/log")
-async def log_event(log_request: LogRequest, response: Response):
+async def log_event(log_request: LogRequest,request :Request, response: Response):
     """
     Receive a log and insert it into the database.
     """
 
     insert_query = """
     INSERT INTO error_logs (
-        uuid, log, title, source
-    ) VALUES (%s, %s, %s, %s);
+        uuid, log, title, source, country, city, region
+    ) VALUES (%s, %s, %s, %s,%s,%s,%s);
     """
 
     #  Convert the log list to a , separated string
     log_request.logs = ",".join(log_request.logs)
 
     try :
+        userLoc = get_location(request)
+        print(userLoc)
         execute_query(insert_query, (
             log_request.uuid,
             log_request.logs,
             log_request.title,
-            log_request.source
+            log_request.source,
+            userLoc.get("country"),
+            userLoc.get("city"),
+            userLoc.get("region")
         ))
         return success_response(response, "log received", 201)
     except Exception as e:
