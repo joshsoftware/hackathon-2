@@ -92,3 +92,57 @@ BEGIN
         );
     END IF;
 END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'error_logs' AND column_name = 'country'
+    ) THEN
+        ALTER TABLE error_logs ADD COLUMN country VARCHAR(255);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'error_logs' AND column_name = 'city'
+    ) THEN
+        ALTER TABLE error_logs ADD COLUMN city VARCHAR(255);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'error_logs' AND column_name = 'region'
+    ) THEN
+        ALTER TABLE error_logs ADD COLUMN region VARCHAR(255);
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'events' AND column_name = 'country'
+    ) THEN
+        ALTER TABLE events ADD COLUMN country VARCHAR(255);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'events' AND column_name = 'city'
+    ) THEN
+        ALTER TABLE events ADD COLUMN city VARCHAR(255);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'events' AND column_name = 'region'
+    ) THEN
+        ALTER TABLE events ADD COLUMN region VARCHAR(255);
+    END IF;
+END $$;
