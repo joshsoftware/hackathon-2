@@ -2,25 +2,16 @@ import { postLogs, postEvent } from "./apis.js";
 import nainaAB from "./codeGremlin.js";
 import { ALY_TOOLS_ENDPOINTS } from "./constants.js";
 
-let isABDhadakne = false;
-(function () {
-  isABDhadakne = nainaAB();
-})();
-
-/**
- * @param {Object} {message, sorurce}
- * @returns {void}
- * @description will do the api call if the page is breaking
- */
 export const wizarddryHelper = ({ message, source }) => {
   try {
-    //will do the api call if the page is breaking
     const uuid = localStorage.getItem("dryId");
     let params = {
       uuid,
-      logs: [message],
+      log: String(message),
       source: "F",
       origin: source,
+      title: "dummy",
+      status: "PENDING"
     };
     postLogs(params);
   } catch (error) {
@@ -28,11 +19,6 @@ export const wizarddryHelper = ({ message, source }) => {
   }
 };
 
-/**
- * @param {Object} url
- * @returns {boolean}
- * @description this will check if the url is an tom api
- */
 const isTomAPI = (url) => {
   return ALY_TOOLS_ENDPOINTS.some((tom) => {
     if (url.includes(tom)) {
@@ -42,20 +28,15 @@ const isTomAPI = (url) => {
   });
 };
 
-/**
- * @param {array, boolean} [url, options], isError
- * @returns {void}
- * @description will do the api call for specific api calls
- */
-export const magicBeansHelper = (args = [], isError = false) => {
+export const magicBeansHelper = async (args = [], isError = false) => {
   try {
     if (isTomAPI(args[0])) {
       let isUnplugged = false;
       if (isError) {
-        isUnplugged = isABDhadakne;
-      }
+        isUnplugged = await nainaAB();
+      };
       const uuid = localStorage.getItem("dryId");
-      let browser = navigator.userAgentData?.brand?.[0]?.brand;
+      let browser = navigator.userAgentData?.brands?.[0]?.brand;
       let params = {
         uuid,
         url: args[0],

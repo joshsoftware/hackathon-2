@@ -13,9 +13,17 @@ import uvicorn
 
 from event_listener.event_listner import APIEventMiddleware
 from utils.location import get_location
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,  # Allows cookies and credentials
+    allow_methods=["*"],  # Allows all HTTP methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 @app.get("/ping")
 def read_ping():
@@ -72,24 +80,26 @@ async def log_event(log_request: LogRequest,request :Request, response: Response
 
     insert_query = """
     INSERT INTO error_logs (
-        uuid, log, title, source, country, city, region
-    ) VALUES (%s, %s, %s, %s,%s,%s,%s);
+        uuid, log, title, source, country, city, region, origin, status
+    ) VALUES (%s, %s, %s, %s,%s,%s,%s, %s, %s);
     """
 
     #  Convert the log list to a , separated string
-    log_request.logs = ",".join(log_request.logs)
+    log_request.log = ",".join(log_request.log)
 
     try :
         userLoc = get_location(request)
         print(userLoc)
         execute_query(insert_query, (
             log_request.uuid,
-            log_request.logs,
+            log_request.log,
             log_request.title,
             log_request.source,
             userLoc.get("country"),
             userLoc.get("city"),
-            userLoc.get("region")
+            userLoc.get("region"),
+            log_request.origin,
+            log_request.status
         ))
         return success_response(response, "log received", 201)
     except Exception as e:
