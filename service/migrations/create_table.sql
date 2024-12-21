@@ -1,6 +1,23 @@
-CREATE TYPE source_enum AS ENUM ('F', 'B');
-CREATE TYPE status_enum AS ENUM ('PENDING', 'PROCESSED');
-CREATE TYPE result_enum AS ENUM ('SUCCESS', 'FAILED');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'source_enum') THEN
+        CREATE TYPE source_enum AS ENUM ('F', 'B');
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'status_enum') THEN
+        CREATE TYPE status_enum AS ENUM ('PENDING', 'PROCESSED');
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'result_enum') THEN
+        CREATE TYPE result_enum AS ENUM ('SUCCESS', 'FAILED');
+    END IF;
+END $$;
 
 CREATE TABLE events (
             id SERIAL PRIMARY KEY,
@@ -32,6 +49,7 @@ CREATE TABLE error_logs (
 CREATE TABLE analysis (
             id SERIAL PRIMARY KEY,
             event_id INT NOT NULL,
+            reason VARCHAR(255),
             insights TEXT,
             fixable BOOLEAN DEFAULT FALSE,
             remarks TEXT,
@@ -43,6 +61,8 @@ CREATE TABLE analysis (
 CREATE TABLE analysis_error_logs (
     analysis_id INT NOT NULL,
     log_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     PRIMARY KEY (analysis_id, log_id),
     FOREIGN KEY (analysis_id) REFERENCES analysis (id),
     FOREIGN KEY (log_id) REFERENCES error_logs (id)

@@ -29,14 +29,14 @@ def fetch_and_process_events() -> Dict[str, List[Dict]]:
 
         # Query events table
         cursor.execute("""
-            SELECT id, uuid, url, status, result, user_agent, ad_blocker_active, plugin_installed, source
+            SELECT id, uuid, url, status, result, user_agent, ad_blocker_active, plugin_installed, source, created_at
             FROM events
         """)
         events = cursor.fetchall()
 
         # Query error_logs table
         cursor.execute("""
-            SELECT id, uuid, log, status, source, origin
+            SELECT id, uuid, log, title, status, origin, source, created_at
             FROM error_logs
         """)
         logs = cursor.fetchall()
@@ -57,7 +57,8 @@ def fetch_and_process_events() -> Dict[str, List[Dict]]:
                 "result": event[4] == "SUCCESS",
                 "user_agent": event[5],
                 "ab_active": event[6],
-                "p_installed": event[7] or []
+                "p_installed": event[7].split(",") or [],
+                "created_at": event[9].isoformat()
             }
             if event[8] == 'F':
                 frontend_events.append(event_data)
@@ -69,24 +70,25 @@ def fetch_and_process_events() -> Dict[str, List[Dict]]:
             log_data = {
                 "id": log[0],
                 "uuid": log[1],
-                "logs": log[2],
-                "status": log[3],
-                "origin": log[5]
+                "log": log[2],
+                "title": log[3],
+                "status": log[4],
+                "origin": log[5],
+                "created_at": log[7].isoformat()
             }
-            if log[4] == 'F':
+            if log[6] == 'F':
                 frontend_logs.append(log_data)
-            elif log[4] == 'B':
+            elif log[6] == 'B':
                 backend_logs.append(log_data)
 
         return {
             "frontend_events": frontend_events,
             "backend_events": backend_events,
             "frontend_logs": frontend_logs,
-            "backend_logs": backend_logs,
+            "backend_logs": backend_logs
         }
 
     except Exception as e:
-        print(f"Error: {e}")
         return {
             "frontend_events": [],
             "backend_events": [],
@@ -112,17 +114,19 @@ def insert_analysis_results(analysis_results: List[Dict], connection):
             # Insert into the analysis table
             insert_analysis_query = """
                 INSERT INTO analysis (
-                    event_id, insights, fixable, remarks, created_at, updated_at
+                    event_id, reason, insights, fixable, remarks
                 ) VALUES (
-                    %s, %s, %s, %s, NOW(), NOW()
+                    %s, %s, %s, %s, %s
                 ) RETURNING id
             """
-
+            
             # Insert into the analysis_error_logs table
             insert_logs_query = """
                 INSERT INTO analysis_error_logs (
                     analysis_id, log_id
-                ) VALUES (%s, %s)
+                ) VALUES (
+                    %s, %s
+                )
             """
 
             for analysis in analysis_results:
@@ -130,20 +134,32 @@ def insert_analysis_results(analysis_results: List[Dict], connection):
                 cursor.execute(
                     insert_analysis_query,
                     (
-                        analysis.get("event_id"),
-                        ", ".join(analysis.get("insights", [])),
-                        analysis.get("fixable", False),
-                        analysis.get("remarks", ""),
+                        analysis["event_id"],
+                        analysis["reason"],
+                        ", ".join(analysis["insights"]),
+                        analysis["fixable"],
+                        analysis["remarks"]
                     ),
                 )
-                analysis_id = cursor.fetchone()[0]
-
+                result = cursor.fetchone()
+                if result is None:
+                    raise ValueError("Failed to retrieve analysis ID after insertion.")
+                analysis_id = result[0]
+                
                 # Insert associated logs into the analysis_error_logs table
-                log_ids = analysis.get("logs", [])
-                log_values = [(analysis_id, log_id) for log_id in log_ids]
-                execute_batch(cursor, insert_logs_query, log_values)
+                log_ids = analysis["logs"]
+                processed_logs = [(analysis_id, log_id) for log_id in log_ids]
+                
+                for processed_log in processed_logs:
+                    cursor.execute(
+                        insert_logs_query,
+                        processed_log,
+                    )
 
             connection.commit()
+
+            #TODO: Update all events and logs included in above analysis
+            
             print(f"{len(analysis_results)} analysis results inserted successfully.")
 
     except Exception as e:
@@ -166,7 +182,7 @@ if __name__ == "__main__":
         backend_logs=data["backend_logs"],
     )
 
-    if analysis_result and "result" in analysis_result:
+    if analysis_result["result"]:
         try:
             with psycopg2.connect(DATABASE_URL) as connection:
                 insert_analysis_results(analysis_result["result"], connection)

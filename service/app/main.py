@@ -1,6 +1,7 @@
 from typing import Union
 
 from fastapi import FastAPI, Response
+import uvicorn
 
 from models.handler.event import EventRequest
 from models.handler.log import LogRequest
@@ -82,3 +83,7 @@ async def log_event(log_request: LogRequest, response: Response):
         return success_response(response, "log received", 201)
     except Exception as e:
         return error_response(response, e, 400)
+    
+    
+if __name__ == "__main__":
+    uvicorn.run(app, host="localhost", port=8000)

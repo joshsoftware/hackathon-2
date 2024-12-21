@@ -111,6 +111,5 @@ def analyse_events_and_logs(
             response_text_json = None
     else:
         response_text_json = None
-    
-    print(response_text_json)
+
     return response_text_json
